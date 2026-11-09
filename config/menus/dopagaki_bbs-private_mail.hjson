@@ -1,0 +1,222 @@
+{
+    menus: {
+        privateMailMenu: {
+            desc: Private Mail
+            art: MAILMNU
+            prompt: menuCommand
+            config: {
+                interrupt: realtime
+            }
+            submit: [
+                {
+                    value: { command: "C" }
+                    action: @menu:privateMailMenuCreateMessage
+                }
+                {
+                    value: { command: "I" }
+                    action: @menu:privateMailMenuInbox
+                }
+                {
+                    value: { command: "Q" }
+                    action: @systemMethod:prevMenu
+                }
+                {
+                    value: { command: "G" }
+                    action: @menu:fullLogoffSequence
+                }
+            ]
+        }
+
+        privateMailMenuCreateMessage: {
+            desc: Mailing Someone
+            module: msg_area_post_fse
+            config: {
+                art: {
+                    header: MSGEHDR
+                    body: MSGBODY
+                    footerEditor: MSGEFTR
+                    footerEditorMenu: MSGEMFT
+                    help: MSGEHLP
+                },
+                editorMode: edit
+                editorType: email
+                messageAreaTag: private_mail
+            }
+            form: {
+                0: {
+                    mci: {
+                        TL1: {
+                            argName:    from
+                        }
+                        ET2: {
+                            argName: to
+                            focus: true
+                            validate: @systemMethod:validateGeneralMailAddressedTo
+                            maxLength: 36
+                        }
+                        ET3: {
+                            argName: subject
+                            maxLength: 72
+                            submit: true
+                            validate: @systemMethod:validateMessageSubject
+                        }
+                    }
+                    submit: {
+                        3: [
+                            {
+                                value: { subject: null }
+                                action: @method:headerSubmit
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.escToPrev
+                }
+                1: {
+                    mci: {
+                        MT1: {
+                            width: 79
+                            argName: message
+                            mode: edit
+                        }
+                    }
+
+                    submit: {
+                        *: [ { value: "message", action: "@method:editModeEscPressed" } ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            viewId: 1
+                        }
+                    ]
+                },
+                2: {
+                    mci: {
+                        SB1: {
+                            width:     9
+                            anchor:    left
+                            justify:   left
+                            separator: " "
+                            panels: [
+                                {
+                                    name:    mode
+                                    width:   3
+                                    justify: right
+                                }
+                                {
+                                    name:    pos
+                                    width:   5
+                                    justify: left
+                                }
+                            ]
+                        }
+                    }
+                }
+                3: {
+                    HM: {
+                        mci: {
+                            HM1: {
+                                //  :TODO: clear
+                                items: [ "save", "discard", "help" ]
+                            }
+                        }
+                        submit: {
+                            *: [
+                                {
+                                    value: { 1: 0 }
+                                    action: @method:editModeMenuSave
+                                }
+                                {
+                                    value: { 1: 1 }
+                                    action: @systemMethod:prevMenu
+                                }
+                                {
+                                    value: { 1: 2 }
+                                    action: @method:editModeMenuHelp
+                                }
+                            ]
+                        }
+                        actionKeys: [
+                            {
+                                keys: [ "escape" ]
+                                action: @method:editModeEscPressed
+                            }
+                            {
+                                keys: [ "?" ]
+                                action: @method:editModeMenuHelp
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        privateMailMenuInbox: {
+            desc: Viewing Inbox
+            module: msg_list
+            art: PRVMSGLIST
+            config: {
+                menuViewPost: messageAreaViewPost
+                messageAreaTag: private_mail
+            }
+            form: {
+                0: {    //  main list
+                    mci:  {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: messageIndex
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { messageIndex: null }
+                                action: @method:selectMessage
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        @reference:common.quitToPrevEntry
+                        {
+                            keys: [ "delete", "d", "shift + d" ]
+                            action: @method:deleteSelected
+                        }
+                    ]
+                }
+                1: {    //  delete prompt form
+                    submit: {
+                        *: [
+                            {
+                                value: { promptValue: 0 }
+                                action: @method:deleteMessageYes
+                            }
+                            {
+                                value: { promptValue: 1 }
+                                action: @method:deleteMessageNo
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        //
+        //  Shown when the sysop tries to reply to a pre-auth feedback message.
+        //  Its sender has no user account, so a reply cannot be delivered and
+        //  would be silently discarded; see
+        //  modules/pre-auth-feedback.md.
+        //
+        preAuthFeedbackNoReply: {
+            desc: No Reply - Ghost Sender
+            art: PREAFNRPLY
+            config: { nextTimeout: 3000 }
+            //
+            //  A bare "prevMenu" would be looked up as a menu of that name and
+            //  fail; going back is a system method.
+            //
+            next: @systemMethod:prevMenu
+        }
+
+    }
+}

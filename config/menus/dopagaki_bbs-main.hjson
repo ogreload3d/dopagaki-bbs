@@ -1,0 +1,1794 @@
+{
+    /*
+        ./\/\.' ENiGMA½ Menu Configuration -/--/-------- - --   -
+                                                                         ______
+        _____________________   _____  ____________________    __________\_   /
+        \__   ____/\_ ____   \ /____/ /   _____ __         \  /   ______/ // /___jp!
+         //   __|___//   |    \//   |//   |    \//  |  |    \//        \ /___   /_____
+        /____       _____|      __________       ___|__|      ____|     \   /  _____  \
+        ---- \______\ -- |______\ ------ /______/ ---- |______\ - |______\ /__/ // ___/
+                                                                               /__   _\
+        <*>   ENiGMA½  // HTTPS://GITHUB.COM/NUSKOOLER/ENIGMA-BBS   <*>          /__/
+
+        *-----------------------------------------------------------------------------*
+
+        General Information
+        ------------------------------- -   -
+        This configuration is in HJSON (http://hjson.org/) format. Strict to-spec
+        JSON is also perfectly valid. Use 'hjson' from npm to convert to/from JSON.
+
+        See http://hjson.org/ for more information and syntax.
+
+        Various editors and IDEs such as Sublime Text 3, Visual Studio Code, and so
+        on have syntax highlighting for the HJSON format which are highly recommended.
+
+        ------------------------------- -- -    -
+        Menu Configuration
+        ------------------------------- -   -
+        ENiGMA½ makes no assumptions about specific menu types (main, doors, etc.),
+        but instead allows full customization of all menus throughout the system.
+        Some menus such as a main menu are considered "standard" while others are
+        backed by a specific module. SysOps can tweak various settings about these
+        modules (look & feel, keyboard interation, and so on) or even fully replace
+        the module with something else.
+
+        This file starts out as an example setup. Look at the examples, change
+        settings, menu ordering/flow, add/remove menus, implement ACS control,
+        etc.!
+
+        Remember you can *live edit* this file. That is, make a change and save
+        while you're logged into the system and it will take effect on the next
+        menu change or screen refresh.
+
+        Please see RTFM ...er, uh... see the documentation for more information, and
+        don't be shy to ask for help:
+
+        BBS     : Xibalba @ xibalba.vip
+        FTN     : BBS Discussion on fsxNet
+        IRC     : #enigma-bbs / FreeNode
+        Email   : bryan@l33t.codes
+    */
+
+    //  You may include as many additional fragments as you like here.
+    includes: [
+        dopagaki_bbs-message_base.hjson
+		dopagaki_bbs-private_mail.hjson
+		dopagaki_bbs-login.hjson
+		dopagaki_bbs-new_user.hjson
+		dopagaki_bbs-doors.hjson
+		dopagaki_bbs-file_base.hjson
+		dopagaki_bbs-activitypub.hjson
+    ]
+
+    //  This section creates common fragments to use as @reference
+    common: {
+        //
+        //  Each binding is published twice: the entry on its own, and a
+        //  one-element array around it.
+        //
+        //  @reference: replaces a whole value rather than merging into it, so
+        //  a menu whose actionKeys are nothing but the shared binding wants
+        //  the array -- "actionKeys: @reference:common.escToPrev" -- while a
+        //  menu that adds keys of its own wants the entry, listed alongside
+        //  them:
+        //
+        //      actionKeys: [
+        //          @reference:common.quitToPrevEntry
+        //          { keys: [ "p" ], action: @method:postNewMessage }
+        //      ]
+        //
+        //  Referencing the array in that second case would drop the menu's
+        //  own keys, which is why the bindings used to be written out by hand.
+        //
+        escToPrevEntry: {
+            keys: [ "escape" ]
+            action: @systemMethod:prevMenu
+        }
+
+        escToPrev: [
+            @reference:common.escToPrevEntry
+        ]
+
+        quitToPrevEntry: {
+            keys: [ "escape", "q", "shift + q" ]
+            action: @systemMethod:prevMenu
+        }
+
+        quitToPrev: [
+            @reference:common.quitToPrevEntry
+        ]
+    }
+
+    menus: {
+        mainMenu: {
+            desc: Main Menu
+            art: MMENU
+            prompt: menuCommand
+            config: {
+                font: cp437
+                interrupt: realtime
+            }
+            submit: [
+                {
+                    value: { command: "G" }
+                    action: @menu:fullLogoffSequence
+                }
+                {
+                    value: { command: "D" }
+                    action: @menu:doorsMainMenu
+                }
+                {
+                    value: { command: "F" }
+                    action: @menu:fileBaseMainMenu
+                }
+                {
+                    value: { command: "U" }
+                    action: @menu:mainMenuUserList
+                }
+                {
+                    value: { command: "L" }
+                    action: @menu:mainMenuLastCallers
+                }
+                {
+                    value: { command: "W" }
+                    action: @menu:mainMenuWhosOnline
+                }
+                {
+                    value: { command: "Y" }
+                    action: @menu:mainMenuUserStats
+                }
+                {
+                    value: { command: "M" }
+                    action: @menu:messageBaseMainMenu
+                }
+                {
+                    value: { command: "A" }
+                    action: @menu:activityPubMenu
+                }
+                {
+                    value: { command: "E" }
+                    action: @menu:privateMailMenu
+                }
+                {
+                    value: { command: "C" }
+                    action: @menu:mainMenuUserConfig
+                }
+                {
+                    value: { command: "S" }
+                    action: @menu:mainMenuSystemStats
+                }
+                {
+                    value: { command: "!" }
+                    action: @menu:mainMenuGlobalNewScan
+                }
+                {
+                    value: { command: "K" }
+                    action: @menu:mainMenuFeedbackToSysOp
+                }
+                {
+                    value: { command: "O" }
+                    action: @menu:mainMenuOnelinerz
+                }
+                {
+                    value: { command: "R" }
+                    action: @menu:mainMenuRumorz
+                }
+                {
+                    value: { command: "BBS"}
+                    action: @menu:bbsList
+                }
+                {
+                    value: { command: "UA" }
+                    action: @menu:mainMenuUserAchievementsEarned
+                }
+                {
+                    value: { command: "MRC" }
+                    action: @menu:mrc
+                }
+                {
+                    value: { command: "!WFC" }
+                    action: @menu:mainMenuWaitingForCaller
+                }
+                {
+                    value: { command: "2FA" }
+                    action: [
+                        {
+                            //
+                            //  For security reasons, only allow 2FA/OTP to be
+                            //  configured over already secure (SSL, wss://, ...)
+                            //  connections. Not doing so risks leaking secrets!
+                            //
+                            acs: SC
+                            action: @menu:userTwoFactorAuthOTPConfig
+                        }
+                        {
+                            action: @menu:userTwoFactorAuthOTPSecConnRequired
+                        }
+                    ]
+                }
+                {
+                    value: { command: "SSH" }
+                    action: [
+                        {
+                            //  Allow SSH key management only from secure transports
+                            acs: SC
+                            action: @menu:userSSHKeyConfig
+                        }
+                        {
+                            action: @menu:userSSHKeyConfigSecConnRequired
+                        }
+                    ]
+                }
+                {
+                    value: { command: "T" }
+                    action: @menu:userStatusConfig
+                }
+                {
+                    value: { command: "MSG" }
+                    action: @menu:nodeMessage
+                }
+                {
+                    value: { command: "P" }
+                    action: @menu:pageSysop
+                }
+            ]
+        }
+
+        mainMenuUserAchievementsEarned: {
+            desc: Achievements
+            module: user_achievements_earned
+            art: USERACHIEV
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                        }
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        mainMenuWaitingForCaller: {
+			desc: -WFC-
+			module: wfc
+
+			config: {
+                art: {
+                    main: wfc
+                    help: wfchelp
+                    fullLog: wfcfulllog
+                    //  Message viewer. Needs %VM1 (list) and %MT2 (detail).
+                    //  Without the art file a plain text list is shown instead,
+                    //  so this works before the theme catches up.
+                    messages: wfcmessages
+                    //  Task screen (t). Needs %VM1 (list), %MT2 (detail) and
+                    //  %XY3 (prompt line). Without it a plain text list is
+                    //  shown instead.
+                    tasks: wfctasks
+                    //  Run / stop confirm, drawn at the task screen's %XY3:
+                    //  %TL2 gets the question, %TM1 is yes/no. Without it a
+                    //  plain "question [y/N]" line is shown instead.
+                    taskPrompt: wfctaskprompt
+                }
+
+                //  Where a notification goes when it reaches an +op sitting
+                //  here. Nothing is ever painted over the dashboard.
+                //  Sinks: inbox, statusBar, log, ticker, interrupt.
+                //  An empty list drops that kind entirely.
+                //  NOTE: HJSON will not accept bare words sharing a line
+                //  inside [ ], so keep one per line.
+                //  notifications: {
+                //      nodeMsg: {
+                //          sinks: [
+                //              inbox
+                //              statusBar
+                //          ]
+                //      }
+                //      achievementGlobal: {
+                //          sinks: [
+                //              log
+                //          ]
+                //      }
+                //  }
+
+                //  Activity marquee for an optional %TK6 ticker. idleText
+                //  takes the same tokens as custom MCI 10+ ({boardName},
+                //  {totalCalls}, {callsToday}, ...).
+                //  ticker: {
+                //      rotateOn: "cycle"     // or a number of ms
+                //      maxItems: 10
+                //      idleText: "{boardName} - {totalCalls} calls"
+                //      events: {
+                //          userLogin: "|15{userName}|07 logged in on node |15{nodeId}|07"
+                //          //  Scheduler tasks. Only taskFailed and
+                //          //  taskOverdue are on by default; a failed run
+                //          //  shows taskFailed in place of taskFinished.
+                //          //  Tokens: {taskName}, {taskDesc}, {reason},
+                //          //  {byUser}, {error}, {duration}, {timeoutMs}
+                //          taskStarted: "|07Task |15{taskDesc}|07 started"
+                //          taskFinished: "|07Task |15{taskDesc}|07 finished in {duration}"
+                //          taskFailed: "|12Task |15{taskDesc}|12 failed|07: {error}"
+                //          taskOverdue: "|14Task |15{taskDesc}|14 is overdue|07"
+                //      }
+                //  }
+
+                //  Panels for an optional %SB5 status bar (see form 0 below).
+                //  Each named panel is filled from statusBar<Name>Format,
+                //  e.g. a panel named "user" reads statusBarUserFormat.
+                //  Tokens: everything custom MCI 10+ gets, plus {count} --
+                //  unread messages for "messages", pending pages for "pages",
+                //  running scheduler tasks for "tasks".
+                //  statusBar<Name>ActiveFormat, when set, is used instead
+                //  while {count} is above zero. A panel with no format is
+                //  left alone, so a static `text` label still works.
+                //  statusBarMessagesFormat: "|08MSG |07{count}"
+                //  statusBarMessagesActiveFormat: "|08MSG |15{count}"
+                //  statusBarPagesFormat: "|08PAGE |07{count}"
+                //  statusBarTasksFormat: "|08TASK |07{count}"
+                //  statusBarTasksActiveFormat: "|08TASK |11{count}"
+                //  statusBarUserFormat: "|15{currentUserName}"
+                //  An SB5 without panels (and without a text of its own)
+                //  shows one header line instead:
+                //  statusBarFormat: "{now}  {currentUserName}  Msg:{pendingNodeMessageCount}"
+
+                //  Menu used by S (send) and R (reply). Defaults to
+                //  wfcNodeMessage, the +op-side copy of nodeMessage.
+                //  nodeMessageMenuName: wfcNodeMessage
+
+                //  Message viewer / inbox
+                //  inboxMaxItems: 50
+                //  messageAlert: true          // BEL on arrival
+                //  messagePreviewLength: 40
+                //  Message tokens: {index}, {userName}, {realName}, {nodeId},
+                //  {timestamp}, {text}, {unreadIndicator}
+                //  unreadIndicator: "*"        // shown for unread messages
+                //  messageListFormat: "|08[|07{index}|08] |15{userName}|08/|07{nodeId} |08- |07{text}"
+                //  messageDetailFormat: "{text}"
+                //  noMessagesText: "|08No messages.|07"
+
+                //  Log level for the quick-log mini-view (defaults to system level)
+                //  quickLogLevel: info
+
+                //  Max entries loaded into the full-log snapshot (default: 500)
+                //  fullLogLimit: 500
+
+                //  Per-field format for the full-log detail pane.
+                //  Tokens: {name}, {sep}, {value}. Pipe color codes supported.
+                //  logDetailFieldFormat: "|08{name}|07{sep}|07{value}"
+
+                //  Task screen (form 5): eventScheduler.events, to run and
+                //  stop. Row tokens: {index}, {name}, {desc}, {schedule},
+                //  {nextRun}, {status}, {statusIndicator}, {lastRunAt},
+                //  {lastResult}, {lastError}, {duration}, {durationMs},
+                //  {byUser}, {runCount}, {elapsed}, {startedAt},
+                //  {overdueSince}, {stopAction}, {stopVerb}
+                //  taskListFormat: "{statusIndicator} {desc:<26.26} {schedule:<16.16} {nextRun:<14.14} {lastResult}"
+                //  taskListFocusFormat: "|15{statusIndicator} {desc:<26.26} {schedule:<16.16} {nextRun:<14.14} {lastResult}"
+                //  taskDateTimeFormat: "MM/DD hh:mma"
+                //  taskStatusIndicators: {
+                //      running: "*"
+                //      overdue: "!"
+                //      failed: X
+                //      ok: "+"
+                //      never: "-"
+                //  }
+                //  taskManualScheduleText: manual
+                //  taskNoNextRunText: "-"
+                //  taskNeverRunText: never
+                //  Detail pane, one line per field. Tokens: {name}, {sep}, {value}
+                //  taskDetailFieldFormat: "|08{name}|07{sep}{value}"
+                //  noTasksText: "|08No tasks.|07"
+                //  Confirm questions; same tokens as a row. {stopVerb} is
+                //  Kill or Abandon (taskStopVerbs) by what stopping does.
+                //  runTaskPromptFormat: "Run {desc}?"
+                //  stopTaskPromptFormat: "{stopVerb} {desc}?"
+                //  Result of run / stop, in {taskActionResult} for the
+                //  tasksInfoFormat10+ custom views, else written at %XY3.
+                //  Keys: started, alreadyRunning, disabled, unknown, killed,
+                //  abandoned, notRunning, unavailable. Tokens: {name}, {desc}
+                //  taskActionResultFormats: {
+                //      started: "|10Started |15{desc}"
+                //  }
+                //  Custom views: tasksInfoFormat10, 11, ... Tokens: {taskCount},
+                //  {runningTaskCount}, {overdueTaskCount}, {failedTaskCount},
+                //  {selectedTaskName}, {selectedTaskDesc}, {taskActionResult},
+                //  {now}, plus everything custom MCI 10+ on the dashboard gets
+                //  tasksInfoFormat10: "{taskActionResult}"
+			}
+
+			form: {
+				0: {
+					mci: {
+						VM1: {
+							focus: true
+						}
+						VM2: {
+							focus: false
+                            acceptsFocus: false
+                            acceptsInput: false
+						}
+                        //  Status bar, for art that places %SB5. Panel mode
+                        //  only: panels are filled by name from
+                        //  statusBar<Name>Format above. A theme's panels
+                        //  replace this list wholesale.
+                        SB5: {
+                            separator: " "
+                            panels: [
+                                {
+                                    name: messages
+                                    width: 8
+                                }
+                                {
+                                    name: pages
+                                    width: 8
+                                }
+                            ]
+                        }
+					}
+
+					actionKeys: [
+                        {
+                            keys: [ "a", "shift + a" ]
+                            action: @method:toggleAvailable
+                        }
+                        {
+                            keys: [ "v", "shift + v" ]
+                            action: @method:toggleVisible
+                        }
+                        {
+                            keys: [ "?", "h", "shift + h" ]
+                            action: @method:displayHelp
+                        }
+                        {
+                            keys: [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+                            action: @method:setNodeStatusSelection
+                        }
+                        {
+                            keys: [ "k", "shift + k" ]
+                            action: @method:kickSelectedNode
+                        }
+                        {
+                            keys: [ "b", "shift + b" ]
+                            action: @method:chatWithSelectedNode
+                        }
+                        {
+                            keys: [ "l", "shift + l" ]
+                            action: @method:displayFullLog
+                        }
+                        {
+                            keys: [ "m", "shift + m" ]
+                            action: @method:displayMessages
+                        }
+                        {
+                            keys: [ "s", "shift + s" ]
+                            action: @method:sendNodeMessage
+                        }
+                        {
+                            keys: [ "t", "shift + t" ]
+                            action: @method:displayTasks
+                        }
+						@reference:common.quitToPrevEntry
+					]
+				}
+
+                //  Full log viewer — VM1: entry list (↑/↓); MT2: detail (PgUp/PgDn)
+                2: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                        }
+                        MT2: {
+                            acceptsFocus: false
+                            acceptsInput: false
+                        }
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "page up" ]
+                            action: @method:scrollFullLogDetailPageUp
+                        }
+                        {
+                            keys: [ "page down" ]
+                            action: @method:scrollFullLogDetailPageDown
+                        }
+                        {
+                            keys: [ "escape", "q", "shift + q" ]
+                            action: @method:exitFullLog
+                        }
+                    ]
+                }
+
+                //  Message viewer — VM1: message list (↑/↓); MT2: detail
+                4: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                        }
+                        MT2: {
+                            acceptsFocus: false
+                            acceptsInput: false
+                        }
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "r", "shift + r" ]
+                            action: @method:replySelectedMessage
+                        }
+                        {
+                            keys: [ "d", "shift + d", "del" ]
+                            action: @method:dismissSelectedMessage
+                        }
+                        {
+                            keys: [ "escape", "q", "shift + q" ]
+                            action: @method:exitMessages
+                        }
+                    ]
+                }
+
+                //  Task screen — VM1: task list (up/down); MT2: detail
+                //  (PgUp/PgDn); XY3: where the confirm prompt goes
+                5: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                        }
+                        MT2: {
+                            mode: preview
+                            acceptsFocus: false
+                            acceptsInput: false
+                        }
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "return", "r", "shift + r" ]
+                            action: @method:runSelectedTask
+                        }
+                        {
+                            keys: [ "x", "shift + x" ]
+                            action: @method:stopSelectedTask
+                        }
+                        {
+                            keys: [ "f", "shift + f" ]
+                            action: @method:refreshTasks
+                        }
+                        {
+                            keys: [ "page up" ]
+                            action: @method:scrollTaskDetailPageUp
+                        }
+                        {
+                            keys: [ "page down" ]
+                            action: @method:scrollTaskDetailPageDown
+                        }
+                        {
+                            keys: [ "escape", "q", "shift + q" ]
+                            action: @method:exitTasks
+                        }
+                    ]
+                }
+
+                //  Run / stop confirm (art: taskPrompt), drawn at form 5's
+                //  XY3. TL2 shows the question.
+                6: {
+                    mci: {
+                        TM1: {
+                            argName: promptValue
+                            items: [ "yes", "no" ]
+                            //  starts on "no": enter alone never runs or stops anything
+                            focusItemIndex: 1
+                            focus: true
+                            submit: true
+                            hotKeys: { Y: 0, N: 1 }
+                            hotKeySubmit: true
+                        }
+                        TL2: {
+                            acceptsFocus: false
+                            acceptsInput: false
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { promptValue: 0 }
+                                action: @method:taskPromptYes
+                            }
+                            {
+                                value: { promptValue: 1 }
+                                action: @method:taskPromptNo
+                            }
+                        ]
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:taskPromptNo
+                        }
+                    ]
+                }
+
+                // confirmKickNodePrompt
+                3: {
+                    submit: {
+                        *: [
+                            {
+                                value: { promptValue: 0 }
+                                action: @method:kickNodeYes
+                            }
+                            {
+                                value: { promptValue: 1 }
+                                action: @method:kickNodeNo
+                            }
+                        ]
+                    }
+                }
+			}
+		}
+
+        mrc: {
+            desc: MRC Chat
+            module: mrc
+            art: MRC
+            config: {
+                cls: true
+
+                //  max lines kept in scrollback buffer
+                maxScrollbackLines: 500
+            }
+            form: {
+                0: {
+                    mci: {
+                        MT1: {
+							mode: preview
+							autoScroll: true
+						}
+                        ET2: {
+                            argName: inputArea
+                            submit: true
+                            focus: true
+                        }
+                    }
+                    actionKeys: [
+                        @reference:common.escToPrevEntry
+                        {
+                            keys: [ "tab", "down arrow", "up arrow", "page up", "page down" ]
+                            action: @method:movementKeyPressed
+                        }
+                    ]
+                    submit: {
+                        *: [
+                            {
+                                value: { inputArea: null }
+                                action: @method:sendChatMessage
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        //  Page Sysop — user-facing paging mod
+        pageSysop: {
+            desc: Page Sysop
+            module: page_sysop
+            config: {
+                cls: true
+                art: {
+                    main: PAGESYSP
+                    mailConfirm: PAGESYPNA
+                }
+            }
+            form: {
+                0: {
+                    mci: {
+                        ET1: {
+                            argName: message
+                            maxLength: 78
+                            submit: true
+                            focus: true
+                        }
+                    }
+                    actionKeys: @reference:common.escToPrev
+                    submit: {
+                        *: [
+                            {
+                                value: { message: null }
+                                action: @method:sendPage
+                            }
+                        ]
+                    }
+                }
+                1: {
+                    //  Shown when sysop is unavailable — combined "not available + send as mail?" art
+                    mci: {
+                        TM1: {
+                            argName: confirm
+                            items: [ "yes", "no" ]
+                            focus: true
+                            hotKeys: { Y: 0, N: 1 }
+                            hotKeySubmit: true
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { confirm: null }
+                                action: @method:confirmSendMail
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        //  Sysop Chat — split-screen chat mod (both parties use this)
+        sysopChat: {
+            desc: Sysop Chat
+            module: sysop_chat
+            config: {
+                cls: true
+                //  Deliberately not `interrupt: realtime`. A realtime interrupt
+                //  clears the screen and reloads the menu, which would throw
+                //  away the conversation so far. The module holds interrupts
+                //  for whatever menu you return to instead.
+                art: {
+                    chat: SYSOPCHAT
+                }
+                //  Status line — art uses %TL10 (or %TL11, etc. for additional fields).
+                //  Tokens: {partnerName} {duration} {userName} {userNode}
+                chatInfoFormat10: "|08Chatting with |15{partnerName}|08 \u00b7 {duration} \u00b7 |07ESC|08 to end|07"
+            }
+            form: {
+                0: {
+                    mci: {
+                        MT1: {
+                            //  Sysop's scrollback panel (top)
+                            mode: preview
+                            autoScroll: true
+                            acceptsFocus: false
+                            acceptsInput: false
+                            height: 6
+                            width: 72
+                        }
+                        ET2: {
+                            //  Sysop's input line (under MT1)
+                            argName: sysopMessage
+                            maxLength: 78
+                            submit: true
+                        }
+                        MT3: {
+                            //  User's scrollback panel (below)
+                            mode: preview
+                            autoScroll: true
+                            acceptsFocus: false
+                            acceptsInput: false
+                            height: 6
+                            width: 72
+                        }
+                        ET4: {
+                            //  User's input line (under MT3)
+                            argName: userMessage
+                            maxLength: 78
+                            submit: true
+                        }
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:endChat
+                        }
+                    ]
+                    submit: {
+                        *: [
+                            {
+                                value: { sysopMessage: null }
+                                action: @method:sendMessage
+                            }
+                            {
+                                value: { userMessage: null }
+                                action: @method:sendMessage
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        userTwoFactorAuthOTPConfig: {
+            desc: 2FA/OTP Config
+            module: user_2fa_otp_config
+            art: 2FACONFSCR
+            form: {
+                0: {
+                    mci: {
+                        TM1: {
+                            argName: enableToggle
+                            focus: true
+                            items: [
+                                //  order is important here:
+                                "disable"
+                                "enable/reset"
+                            ]
+                        }
+                        SM2: {
+                            argName: otpType
+                            items: [
+                                //  order is important here:
+                                "Time-Based - TOTP"
+                                "HMAC-Based - HOTP"
+                                "Google Authenticator"
+                            ]
+                        }
+                        TM3: {
+                            argName: submit
+                            items: [
+                                "save"
+                                "cancel"
+                            ]
+                            submit: true
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { submit: 0 }
+                                action: @method:saveChanges
+                            }
+                            {
+                                value: { submit: 1 }
+                                action: @systemMethod:prevMenu
+                            }
+                        ]
+                    }
+
+                    actionKeys: [
+                        @reference:common.escToPrevEntry
+                        {
+                            keys: [ "q", "shift + q" ]
+                            action: @method:showQRCode
+                        }
+                        {
+                            keys: [ "s", "shift + s" ]
+                            action: @method:showSecret
+                        }
+                        {
+                            keys: [ "b", "shift + b" ]
+                            action: @method:showBackupCodes
+                        }
+                        {
+                            keys: [ "n", "shift + n" ]
+                            action: @method:generateNewBackupCodes
+                        }
+                    ]
+                }
+            }
+        }
+
+        userSSHKeyConfig: {
+            desc: SSH Public Keys
+            module: user_ssh_key_config
+            art: SSHKEYCFG
+            config: {
+                //  Only core/acs.js hasMenuModuleAccess() gates a menu, and it
+                //  reads config.acs -- a menu level "acs" is never consulted.
+                acs: SC
+            }
+            form: {
+                0: {
+                    mci: {
+                        MT1: {
+                            argName: infoText
+                            focus: false
+                        }
+                        ET2: {
+                            argName: publicKey
+                            focus: true
+                        }
+                        TM3: {
+                            argName: submit
+                            items: [
+                                "save/update key"
+                                "remove key"
+                                "cancel"
+                            ]
+                            submit: true
+                        }
+                        TL4: {
+                            argName: statusText
+                            focus: false
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { submit: 0 }
+                                action: @method:saveKey
+                            }
+                            {
+                                value: { submit: 1 }
+                                action: @method:removeKey
+                            }
+                            {
+                                value: { submit: 2 }
+                                action: @systemMethod:prevMenu
+                            }
+                        ]
+                    }
+
+                    actionKeys: @reference:common.escToPrev
+                }
+            }
+        }
+
+        userSSHKeyConfigSecConnRequired: {
+            desc: Insecure Warning
+            art: SSHKEYSEC
+            config: {
+                cls: true
+                pause: true
+            }
+        }
+
+        userStatusConfig: {
+            desc: User Status
+            module: user_status_config
+            config: {
+                art: {
+                    menu: user_status_config
+                }
+                enabledIndicator: "\u221A"
+                disabledIndicator: X
+                menuInfoFormat10: "{visibleIndicator}"
+                menuInfoFormat11: "{availableIndicator}"
+            }
+            form: {
+                0: {
+                    mci: {
+                        TL10: {}
+                        TL11: {}
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "a", "shift + a" ]
+                            action: @method:toggleAvailable
+                        }
+                        {
+                            keys: [ "v", "shift + v" ]
+                            action: @method:toggleVisible
+                        }
+                        @reference:common.quitToPrevEntry
+                    ]
+                }
+            }
+        }
+
+        userTwoFactorAuthOTPSecConnRequired: {
+            desc: Insecure Warning
+            art: 2FAOTPSECREQ
+            config: {
+                cls: true
+                pause: true
+            }
+        }
+
+        userTwoFactorAuthOTPConfigShowDetails: {
+            desc: 2FA/OTP Details
+            module: show_art
+            config: {
+                pause: true
+                method: extraArgs
+            }
+        }
+
+        nodeMessage: {
+            desc: Node Messaging
+            module: node_msg
+            art: NODEMSG
+            config: {
+                cls: true
+                art: {
+                    header: NODEMSGHDR
+                    footer: NODEMSGFTR
+                }
+            }
+            form: {
+                0: {
+                    mci: {
+                        SM1: {
+                            argName: node
+                        }
+                        ET2: {
+                            argName: message
+                            submit: true
+                        }
+                    }
+                    actionKeys: @reference:common.escToPrev
+                    submit: {
+                        *: [
+                            {
+                                value: { message: null }
+                                action: @method:sendMessage
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        //
+        //  The WFC's own send/reply target. Same module and form as
+        //  nodeMessage above, but a separate entry so the +op path can be
+        //  themed and configured without touching what users see -- the WFC
+        //  reaches it with a node already chosen, which a user never does.
+        //  Ships pointing at the same art; give it its own when you want to.
+        //
+        wfcNodeMessage: {
+            desc: Node Messaging
+            module: node_msg
+            art: NODEMSG
+            config: {
+                cls: true
+                art: {
+                    header: NODEMSGHDR
+                    footer: NODEMSGFTR
+                }
+            }
+            form: {
+                0: {
+                    mci: {
+                        SM1: {
+                            argName: node
+                        }
+                        ET2: {
+                            argName: message
+                            submit: true
+                        }
+                    }
+                    actionKeys: @reference:common.escToPrev
+                    submit: {
+                        *: [
+                            {
+                                value: { message: null }
+                                action: @method:sendMessage
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        mainMenuLastCallers: {
+            desc: Last Callers
+            module: last_callers
+            art: LASTCALL
+            config: {
+                pause: pauseAni1
+            }
+        }
+
+        mainMenuWhosOnline: {
+            desc: Who's Online
+            module: whos_online
+            art: WHOSON
+            config: {
+                pause: pauseAni1
+            }
+        }
+
+        mainMenuUserStats: {
+            desc: User Stats
+            art: STATUS
+            config: {
+                pause: pauseAni1
+            }
+        }
+
+        mainMenuSystemStats: {
+            desc: System Stats
+            art: SYSSTAT
+            config: {
+                pause: pauseAni1
+            }
+        }
+
+        mainMenuUserList: {
+            desc: User Listing
+            module: user_list
+            art: USERLST
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                            submit: true
+                        }
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        mainMenuUserConfig: {
+            desc: User Config
+            module: user_config
+            art: CONFSCR
+            form: {
+                0: {
+                    mci: {
+                        ET1: {
+                            argName: realName
+                            maxLength: @config:users.realNameMax
+                            validate: @systemMethod:validateNonEmpty
+                            focus: true
+                        }
+                        ME2: {
+                            argName: birthdate
+                            maskPattern: "####/##/##"
+                        }
+                        ME3: {
+                            argName: sex
+                            maskPattern: A
+                            textStyle: upper
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        ET4: {
+                            argName: location
+                            maxLength: @config:users.locationMax
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        ET5: {
+                            argName: affils
+                            maxLength: @config:users.affilsMax
+                        }
+                        ET6: {
+                            argName: email
+                            maxLength: @config:users.emailMax
+                            validate: @method:validateEmailAvail
+                        }
+                        ET7: {
+                            argName: web
+                            maxLength: @config:users.webMax
+                        }
+                        ME8: {
+                            maskPattern: "##"
+                            argName: termHeight
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        SM9: {
+                            argName: theme
+                        }
+                        ET10: {
+                            argName: password
+                            maxLength: @config:users.passwordMax
+                            password: true
+                            validate: @method:validatePassword
+                        }
+                        ET11: {
+                            argName: passwordConfirm
+                            maxLength: @config:users.passwordMax
+                            password: true
+                            validate: @method:validatePassConfirmMatch
+                        }
+                        TM25: {
+                            argName: submission
+                            items: [ "save", "cancel" ]
+                            submit: true
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { submission: 0 }
+                                action: @method:saveChanges
+                            }
+                            {
+                                value: { submission: 1 }
+                                action: @systemMethod:prevMenu
+                            }
+                        ]
+                    }
+
+                    actionKeys: @reference:common.escToPrev
+                }
+            }
+        }
+
+        mainMenuGlobalNewScan: {
+            desc: New Scan
+            module: new_scan
+            art: NEWSCAN
+            config: {
+                messageListMenu: newScanMessageList
+            }
+        }
+
+        mainMenuFeedbackToSysOp: {
+            desc: SysOp Feedback
+            module: msg_area_post_fse
+            config: {
+                art: {
+                    header: MSGEHDR
+                    body: MSGBODY
+                    footerEditor: MSGEFTR
+                    footerEditorMenu: MSGEMFT
+                    help: MSGEHLP
+                },
+                editorMode: edit
+                editorType: email
+                messageAreaTag: private_mail
+                toUserId: 1 /* always to +op */
+            }
+            form: {
+                0: {
+                    mci: {
+                        TL1: {
+                            argName:    from
+                        }
+                        ET2: {
+                            argName: to
+                            focus: true
+                            text: @sysStat:sysop_username
+                            maxLength: 36
+                            //  :TODO: readOnly: true
+                        }
+                        ET3: {
+                            argName: subject
+                            maxLength: 72
+                            submit: true
+                            validate: @systemMethod:validateMessageSubject
+                        }
+                    }
+                    submit: {
+                        3: [
+                            {
+                                value: { subject: null }
+                                action: @method:headerSubmit
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.escToPrev
+                }
+                1: {
+                    mci: {
+                        MT1: {
+                            width: 79
+                            argName: message
+                            mode: edit
+                        }
+                    }
+
+                    submit: {
+                        *: [ { value: "message", action: "@method:editModeEscPressed" } ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            viewId: 1
+                        }
+                        {
+                            keys: [ "ctrl + s" ]
+                            action: @method:editModeQuickSave
+                        }
+                        {
+                            keys: [ "ctrl + o" ]
+                            action: @method:editModeQuickHelp
+                        }
+                    ]
+                },
+                2: {
+                    mci: {
+                        SB1: {
+                            width:     9
+                            anchor:    left
+                            justify:   left
+                            separator: " "
+                            panels: [
+                                {
+                                    name:    mode
+                                    width:   3
+                                    justify: right
+                                }
+                                {
+                                    name:    pos
+                                    width:   5
+                                    justify: left
+                                }
+                            ]
+                        }
+                    }
+                }
+                3: {
+                    HM: {
+                        mci: {
+                            HM1: {
+                                //  :TODO: clear
+                                items: [ "save", "discard", "help", "upload" ]
+                            }
+                        }
+                        submit: {
+                            *: [
+                                {
+                                    value: { 1: 0 }
+                                    action: @method:editModeMenuSave
+                                }
+                                {
+                                    value: { 1: 1 }
+                                    action: @systemMethod:prevMenu
+                                }
+                                {
+                                    value: { 1: 2 }
+                                    action: @method:editModeMenuHelp
+                                }
+                                {
+                                    value: { 1: 3 }
+                                    action: @method:editModeMenuUpload
+                                }
+                            ]
+                        }
+                        actionKeys: [
+                            {
+                                keys: [ "escape" ]
+                                action: @method:editModeEscPressed
+                            }
+                            {
+                                keys: [ "?" ]
+                                action: @method:editModeMenuHelp
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        mainMenuOnelinerz: {
+            desc: Viewing Onelinerz
+            module: onelinerz
+            config: {
+                cls: true
+                art: {
+                    view: ONELINER
+                    add: ONEADD
+                }
+            }
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: false
+                            height: 10
+                        }
+                        TM2: {
+                            argName: addOrExit
+                            items: [ "yeah!", "nah" ]
+                            "hotKeys"   : { "Y" : 0, "N" : 1, "Q" : 1 }
+                            submit: true
+                            focus: true
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { addOrExit: 0 }
+                                action: @method:viewAddScreen
+                            }
+                            {
+                                value: { addOrExit: null }
+                                action: @systemMethod:nextMenu
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @systemMethod:nextMenu
+                        }
+                    ]
+                },
+                1: {
+                    mci: {
+                        ET1: {
+                            focus: true
+                            maxLength: 70
+                            argName: oneliner
+                        }
+                        TL2: {
+                            width: 60
+                        }
+                        TM3: {
+                            argName: addOrCancel
+                            items: [ "add", "cancel" ]
+                            "hotKeys"   : { "A" : 0, "C" : 1, "Q" : 1 }
+                            submit: true
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { addOrCancel: 0 }
+                                action: @method:addEntry
+                            }
+                            {
+                                value: { addOrCancel: 1 }
+                                action: @method:cancelAdd
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:cancelAdd
+                        }
+                    ]
+                }
+            }
+        }
+
+        mainMenuRumorz: {
+            desc: Rumorz
+            module: rumorz
+            config: {
+                cls: true
+                art: {
+                    entries: RUMORS
+                    add: RUMORADD
+                }
+            }
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: false
+                            height: 10
+                        }
+                        TM2: {
+                            argName: addOrExit
+                            items: [ "yeah!", "nah" ]
+                            "hotKeys"   : { "Y" : 0, "N" : 1, "Q" : 1 }
+                            submit: true
+                            focus: true
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { addOrExit: 0 }
+                                action: @method:viewAddScreen
+                            }
+                            {
+                                value: { addOrExit: null }
+                                action: @systemMethod:nextMenu
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @systemMethod:nextMenu
+                        }
+                    ]
+                },
+                1: {
+                    mci: {
+                        ET1: {
+                            focus: true
+                            maxLength: 70
+                            argName: rumor
+                        }
+                        TL2: {
+                            width: 60
+                        }
+                        TM3: {
+                            argName: addOrCancel
+                            items: [ "add", "cancel" ]
+                            "hotKeys"   : { "A" : 0, "C" : 1, "Q" : 1 }
+                            submit: true
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { addOrCancel: 0 }
+                                action: @method:addEntry
+                            }
+                            {
+                                value: { addOrCancel: 1 }
+                                action: @method:cancelAdd
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:cancelAdd
+                        }
+                    ]
+                }
+            }
+        }
+
+        bbsList: {
+            desc: BBS List
+            module: bbs_list
+            config: {
+                cls: true
+                art: {
+                    entries: BBSLIST
+                    add: BBSADD
+                }
+            }
+
+            form: {
+                0: {
+                    mci: {
+                        VM1: { maxLength: 32 }
+                        TL2: { maxLength: 32 }
+                        TL3: { maxLength: 32 }
+                        TL4: { maxLength: 32 }
+                        TL5: { maxLength: 32 }
+                        TL6: { maxLength: 32 }
+                        TL7: { maxLength: 32 }
+                        TL8: { maxLength: 32 }
+                        TL9: { maxLength: 32 }
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "a" ]
+                            action: @method:addBBS
+                        }
+                        {
+                            //  :TODO: add delete key
+                            keys: [ "d" ]
+                            action: @method:deleteBBS
+                        }
+                        {
+                            keys: [ "q", "escape" ]
+                            action: @systemMethod:prevMenu
+                        }
+                    ]
+                }
+                1: {
+                    mci: {
+                        ET1: {
+                            argName: name
+                            maxLength: 32
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        ET2: {
+                            argName: sysop
+                            maxLength: 32
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        ET3: {
+                            argName: telnet
+                            maxLength: 32
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        ET4: {
+                            argName: www
+                            maxLength: 32
+                        }
+                        ET5: {
+                            argName: location
+                            maxLength: 32
+                        }
+                        ET6: {
+                            argName: software
+                            maxLength: 32
+                        }
+                        ET7:  {
+                            argName: notes
+                            maxLength: 32
+                        }
+                        TM17: {
+                            argName: submission
+                            items: [ "save", "cancel" ]
+                            submit: true
+                        }
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:cancelSubmit
+                        }
+                    ]
+
+                    submit: {
+                        *: [
+                            {
+                                value: { "submission" : 0 }
+                                action: @method:submitBBS
+                            }
+                            {
+                                value: { "submission" : 1 }
+                                action: @method:cancelSubmit
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        fullLogoffSequence: {
+            desc: Logging Off
+            prompt: logoffConfirmation
+            submit: [
+                {
+                    value: { promptValue: 0 }
+                    action: @menu:fullLogoffSequencePreAd
+                }
+                {
+                    value: { promptValue: 1 }
+                    action: @systemMethod:prevMenu
+                }
+            ]
+        }
+
+        fullLogoffSequencePreAd: {
+            desc: Logging Off
+            art: PRELOGAD
+            next: fullLogoffSequenceRandomBoardAd
+            config: {
+                cls: true
+                nextTimeout: 1500
+            }
+        }
+
+        fullLogoffSequenceRandomBoardAd: {
+            desc: Logging Off
+            art: OTHRBBS
+            next: logoff
+            config: {
+                baudRate: 57600
+                pause: true
+                cls: true
+            }
+        }
+
+        logoff: {
+            desc: Logging Off
+            art: LOGOFF
+            next: @systemMethod:logoff
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        //  These entries are required by the system and must exist.
+        //  You can still modify/theme them, however.
+        ////////////////////////////////////////////////////////////////////////
+        idleLogoff: {
+            art:    IDLELOG
+            next:   @systemMethod:logoff
+        }
+
+        //  Shown when a user has used their daily time allowance.
+        //  See users.timeLimits in config.hjson; nothing is metered until
+        //  you configure it, so this menu is unreachable by default.
+        //  If TIMEUP art does not exist, the user gets a plain message
+        //  instead of this menu.
+        timeUpLogoff: {
+            art:    TIMEUP
+            next:   @systemMethod:logoff
+        }
+    }
+
+    prompts: {
+        menuCommand: {
+            art: MNUPRMT
+            mci:  {
+                TL1: { }
+                ET2: {
+                    argName: command
+                    width: 20
+                    maxLength: 20
+                    submit: true
+                    textStyle: upper
+                    focus: true
+                }
+            }
+        }
+
+        logoffConfirmation: {
+            art: LOGPMPT
+            mci: {
+                TM1: {
+                    argName: promptValue
+                    items: [ "yes", "no" ]
+                    focus: true
+                    hotKeys: { Y: 0, N: 1 }
+                    hotKeySubmit: true
+                }
+            }
+        }
+
+        forgotPasswordPrompt: {
+            art: FORGOTPW
+            mci: {
+                ET1: {
+                    argName: username
+                    maxLength: @config:users.usernameMax
+                    width: 32
+                    focus: true
+                }
+            }
+            actionKeys: @reference:common.escToPrev
+        }
+
+        // WFC
+        confirmKickNodePrompt: {
+            art: wfckicknodeprompt
+            mci: {
+                TM1: {
+                    argName: promptValue
+                    items: [ "yes", "no" ]
+                    //  starts on "no": enter alone never kicks anyone
+                    focusItemIndex: 1
+                    focus: true
+                    hotKeys: { Y: 0, N: 1 }
+                    hotKeySubmit: true
+                }
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        //  These entries are required by the system and must exist.
+        //  You can still modify/theme them, however.
+        ////////////////////////////////////////////////////////////////////////
+        pause: {
+            art: pause
+            config: {
+                trailingLF: no
+            }
+        }
+
+        //
+        //  pausePage is displayed between pages when pause: pageBreak is set on a menu.
+        //
+        //  Required config keys:
+        //      continuousKey   - pressing this key skips all remaining page-break prompts
+        //      quitKey         - pressing this key aborts all remaining pages and the end pause
+        //
+        pausePage: {
+            art: pause_page
+            config: {
+                trailingLF: no
+                continuousKey: c
+                quitKey: q
+            }
+            mci: {
+                // Use any MCI codes you wish!
+                TK1: {
+                    text: "|03smash a key to continue |08[|11C|08] |03continuous  |08[|11Q|08] |03quit"
+                    width: 60
+                    motion: bounce
+                    tickInterval: 70
+                }
+            }
+        }
+
+        pauseAni1: {
+            art: pause_ani1
+            config: {
+                trailingLF: no
+            }
+            mci: {
+                TK1: {
+                    text: "|11s|03mash |11y|03our |11k|03eyboard|08!"
+                    width: 55
+                    motion: fallLeft
+                    holdTicks: 30
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,838 @@
+{
+  menus: {
+    activityPubMenu: {
+      desc: ActivityPub Menu
+      art: activitypub_menu
+      prompt: activityPubMenuCommand
+      submit: [
+        {
+          value: { command: "G" }
+          action: @menu:fullLogoffSequence
+        }
+        {
+          value: {command: "S"}
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubSearch
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: {command: "C"}
+          action: @menu:activityPubUserConfig
+        }
+        {
+          value: {command: "M"}
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubSocialManager
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: {command: "Q"}
+          action: @systemMethod:prevMenu
+        }
+        {
+          value: { command: "E" }
+          action: @menu:privateMailMenu
+        }
+        {
+          value: { command: "P" }
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubCompose
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: { command: "B" }
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubMsgBrowser
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: { command: "L" }
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubBrowseLocal
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: { command: "F" }
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubBrowseFavorites
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+        {
+          value: { command: "N" }
+          action: [
+            {
+              acs: "AE1"
+              action: @menu:activityPubBrowseMentions
+            }
+            {
+              action: @menu:activityPubNotEnabled
+            }
+          ]
+        }
+      ]
+    }
+
+    activityPubSearch: {
+      desc: ActivityPub Search
+      module: activitypub/ap_search
+      config: {
+        cls: true
+        art: {
+          main: activitypub_search_main
+          actorView: activitypub_search_results
+        }
+        //  See activityPubSearch config block in theme.hjson for format strings,
+        //  dimensions, and indicators — theme is the right home for those.
+      }
+      form: {
+        0: {
+          mci: {
+            HM1: {
+              items: [{text: "People"}, {text: "Posts"}, {text: "Hashtags"}]
+              argName: tab
+              submit: true
+            }
+            ET2: {
+              focus: true
+              maxLength: 70
+              argName: searchQuery
+              submit: true
+            }
+            VM3: {
+              argName: result
+              submit: true
+            }
+          }
+          submit: {
+            *: [
+              {
+                value: {tab: null}
+                action: @method:tabChanged
+              }
+              {
+                value: {searchQuery: null}
+                action: @method:search
+              }
+              {
+                value: {result: null}
+                action: @method:openResult
+              }
+            ]
+          }
+          actionKeys: @reference:common.escToPrev
+        }
+        1: {
+          mci: {
+            MT1: {
+              mode: preview
+              acceptsFocus: false
+              acceptsInput: false
+              hyperlinks: true
+            }
+          }
+          submit: {}
+          actionKeys: [
+            {
+              keys: ["escape", "q", "shift + q"]
+              action: @method:backKeyPressed
+            }
+            {
+              keys: ["space"]
+              action: @method:toggleFollowKeyPressed
+            }
+            {
+              keys: ["up arrow"]
+              action: @method:scrollSummaryUp
+            }
+            {
+              keys: ["down arrow"]
+              action: @method:scrollSummaryDown
+            }
+          ]
+        }
+      }
+    }
+
+    activityPubUserConfig: {
+      desc: ActivityPub Config
+      module: ./activitypub/user_config
+      config: {
+        art: {
+          main: activitypub_user_config_main
+          images: activitypub_user_config_images
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            TM1: {
+              focus: true
+              items: ["no", "yes"]
+              argName: enabled
+            }
+            TM2: {
+              items: ["no", "yes"]
+              argName: manuallyApproveFollowers
+            }
+            TM3: {
+              items: ["no", "yes"]
+              argName: hideSocialGraph
+            }
+            TM4: {
+              items: ["no", "yes"]
+              argName: showRealName
+            }
+            TL5: {argName: "image"}
+            TL6: {argName: "icon"}
+            BT7: {
+              text: manage images
+              argName: manageImages
+              submit: true
+              justify: center
+            }
+            TM8: {
+              items: ["save", "cancel"]
+              submit: true
+              argName: saveOrCancel
+            }
+          }
+          submit: {
+            *: [
+              {
+                                // :TODO: we need a way to just want the argName *for the submitting item* and drop others
+                value: {manageImages: null}
+                action: @method:mainSubmit
+              }
+            ]
+          }
+          actionKeys: @reference:common.escToPrev
+        }
+        1: {
+          mci: {
+            ML1: {
+              argName: imageUrl
+              mode: edit
+              scrollMode: start
+              focus: true
+              tabSwitchesView: true
+            }
+            ML2: {
+              argName: iconUrl
+              mode: edit
+              scrollMode: start
+              tabSwitchesView: true
+            }
+            TM3: {
+              items: ["save", "cancel"]
+              submit: true
+              argName: imagesSaveOrCancel
+            }
+          }
+          submit: {
+            *: [
+              {
+                value: {imagesSaveOrCancel: null}
+                action: @method:imagesSubmit
+              }
+            ]
+          }
+          actionKeys: [
+            {
+              keys: ["escape"]
+              action: @method:backToMain
+            }
+          ]
+        }
+      }
+    }
+
+    activityPubSocialManager: {
+      desc: ActivityPub Social Manager
+      module: ./activitypub/social_manager
+      config: {
+        art: {main: "activitypub_social_manager"}
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {}
+            MT2: {mode: "preview", acceptsFocus: false, acceptsInput: false}
+            HM3: {
+              focus: true
+              items: [{text: "following"}, {text: "followers"}, {text: "pending requests"}]
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["space", "delete"]
+              action: @method:actorListKeyPressed
+            }
+            {
+              keys: ["down arrow", "up arrow"]
+              action: @method:listKeyPressed
+            }
+            {
+              keys: ["c"]
+              action: @method:composeToSelected
+            }
+            {
+              keys: ["s"]
+              action: @method:searchActors
+            }
+            @reference:common.escToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubMsgBrowser: {
+      desc: ActivityPub Message Browser
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubThread: {
+      desc: ActivityPub Thread View
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubBrowseLocal: {
+      desc: ActivityPub Browse Local
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        mode: local
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubBrowseFavorites: {
+      desc: ActivityPub Favorites
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        mode: favorites
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubBrowseMentions: {
+      desc: ActivityPub Mentions
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        mode: mentions
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    //  Entry point used by core newscan when it encounters a message area
+    //  whose addressFlavor is "activitypub" (e.g. activitypub_shared). Opens
+    //  the federated AP browser so the user sees the dedicated list/viewer
+    //  with thread, attachment, and reaction handling — instead of the
+    //  generic msg_list/FSE viewer that would otherwise be used.
+    newScanActivityPubList: {
+      desc: New ActivityPub Messages
+      module: ./activitypub/activity_pub_msg_list
+      config: {
+        mode: federated
+        threadMenu: activityPubThread
+        art: {
+          main: activitypub_msg_browser
+        }
+      }
+      form: {
+        0: {
+          mci: {
+            VM1: {
+              focus: true
+            }
+          }
+          actionKeys: [
+            {
+              keys: ["return", "space", "b", "l", "r", "d", "t", "+", "down arrow", "up arrow", "page up", "page down", "home", "end"]
+              action: @method:listKeyPressed
+            }
+            @reference:common.quitToPrevEntry
+          ]
+        }
+      }
+    }
+
+    activityPubMsgViewer: {
+      desc: ActivityPub Message Viewer
+      module: ./activitypub/activity_pub_msg_viewer
+      config: {
+        art: {
+          body:   activitypub_msg_viewer
+          footer: activitypub_msg_viewer_footer
+        }
+      }
+      form: {
+        //  Form 1 — body (MT1 message body + TL10+ custom header labels)
+        //  Never directly focused — display only. Footer handles all input.
+        1: {
+          mci: {
+            MT1: {
+              mode: preview
+              acceptsFocus: false
+              acceptsInput: false
+              hyperlinks: true
+            }
+          }
+        }
+        //  Form 4 — footer (HM1 horizontal menu) — always focused
+        4: {
+          mci: {
+            HM1: {
+              items: ["prev", "next", "next thd", "prev thd", "boost", "like", "reply", "quit"]
+              focusItemIndex: 1
+              submit: true
+            }
+          }
+          submit: {
+            *: [
+              {
+                value: { 1: 0 }
+                action: @method:prevNote
+              }
+              {
+                value: { 1: 1 }
+                action: @method:nextNote
+              }
+              {
+                value: { 1: 2 }
+                action: @method:threadNext
+              }
+              {
+                value: { 1: 3 }
+                action: @method:threadPrev
+              }
+              {
+                value: { 1: 4 }
+                action: @method:boostNote
+              }
+              {
+                value: { 1: 5 }
+                action: @method:likeNote
+              }
+              {
+                value: { 1: 6 }
+                action: @method:replyNote
+              }
+              {
+                value: { 1: 7 }
+                action: @method:quitViewer
+              }
+            ]
+          }
+          actionKeys: [
+            {
+              keys: ["up arrow", "down arrow", "page up", "page down"]
+              action: @method:movementKeyPressed
+            }
+            {
+              keys: ["["]
+              action: @method:threadPrev
+            }
+            {
+              keys: ["]"]
+              action: @method:threadNext
+            }
+            {
+              keys: ["b"]
+              action: @method:boostNote
+            }
+            {
+              keys: ["l"]
+              action: @method:likeNote
+            }
+            {
+              keys: ["r"]
+              action: @method:replyNote
+            }
+            {
+              keys: ["escape", "q", "shift + q"]
+              action: @method:quitViewer
+            }
+          ]
+        }
+      }
+    }
+
+    //
+    //  AP compose / reply — thin FSE wrapper.
+    //  Pushed by the browser (_replySelected) and viewer (replyNote) with
+    //  extraArgs: { messageAreaTag, replyToMessage }.
+    //  The scanner/tosser picks up the saved message and delivers it as
+    //  a Create{Note} activity with inReplyTo set from the parent's meta.
+    //
+    activityPubCompose: {
+      desc: ActivityPub Compose
+      module: msg_area_post_fse
+      config: {
+        cls: true
+        messageAreaTag: activitypub_shared
+        art: {
+          header: MSGEHDR
+          body: MSGBODY
+          quote: MSGQUOT
+          footerEditor: MSGEFTR
+          footerEditorMenu: MSGEMFT
+          footerFind: MSGFND
+          help: MSGEHLP
+        }
+        editorMode: edit
+        editorType: area
+      }
+      form: {
+        0: {
+          mci: {
+            TL1: {
+              argName: from
+            }
+            ET2: {
+              argName: to
+              focus: true
+              text: All
+              maxLength: 36
+            }
+            ET3: {
+              argName: subject
+              maxLength: 72
+              submit: true
+            }
+          }
+          submit: {
+            3: [
+              {
+                value: { subject: null }
+                action: @method:headerSubmit
+              }
+            ]
+          }
+          actionKeys: [
+            {
+              keys: ["escape"]
+              action: @method:headerEscapePressed
+            }
+          ]
+        }
+        1: {
+          mci: {
+            MT1: {
+              width: 79
+              argName: message
+              mode: edit
+            }
+          }
+          submit: {
+            *: [
+              {
+                value: message
+                action: "@method:editModeEscPressed"
+              }
+            ]
+          }
+          actionKeys: [
+            {
+              keys: ["escape"]
+              viewId: 1
+            }
+            {
+              keys: ["ctrl + s"]
+              action: @method:editModeQuickSave
+            }
+            {
+              keys: ["ctrl + o"]
+              action: @method:editModeQuickHelp
+            }
+            {
+              keys: ["ctrl + f"]
+              action: @method:editModeFind
+            }
+            {
+              keys: ["ctrl + n"]
+              action: @method:editModeFindNext
+            }
+            {
+              keys: ["ctrl + p"]
+              action: @method:editModeFindPrev
+            }
+            {
+              keys: ["ctrl + a"]
+              action: @method:editModeChangeSubject
+            }
+          ]
+        }
+        2: {
+          mci: {
+            SB1: {
+              width: 9
+              anchor: left
+              justify: left
+              separator: " "
+              panels: [
+                {
+                  name: modeLabel
+                  width: 5
+                  text: "|03mode|08:"
+                  justify: left
+                }
+                {
+                  name: mode
+                  width: 3
+                  justify: right
+                }
+                {
+                  name: posLabel
+                  width: 5
+                  text: " |03pos|08:"
+                  justify: left
+                }
+                {
+                  name: pos
+                  width: 5
+                  justify: left
+                }
+              ]
+            }
+          }
+        }
+        3: {
+          HM: {
+            mci: {
+              HM1: {
+                items: ["save", "discard", "quote", "help", "upload"]
+              }
+            }
+            submit: {
+              *: [
+                {
+                  value: { 1: 0 }
+                  action: @method:editModeMenuSave
+                }
+                {
+                  value: { 1: 1 }
+                  action: @systemMethod:prevMenu
+                }
+                {
+                  value: { 1: 2 }
+                  action: @method:editModeMenuQuote
+                }
+                {
+                  value: { 1: 3 }
+                  action: @method:editModeMenuHelp
+                }
+                {
+                  value: { 1: 4 }
+                  action: @method:editModeMenuUpload
+                }
+              ]
+            }
+            actionKeys: [
+              {
+                keys: ["escape"]
+                action: @method:editModeEscPressed
+              }
+              {
+                keys: ["q", "shift + q"]
+                action: @method:editModeMenuQuote
+              }
+              {
+                keys: ["?"]
+                action: @method:editModeMenuHelp
+              }
+            ]
+          }
+        }
+        5: {
+          mci: {
+            MT1: {
+              width: 79
+              height: 7
+            }
+            VM3: {
+              width: 79
+              height: 4
+              argName: quote
+            }
+          }
+          submit: {
+            *: [
+              {
+                value: { quote: null }
+                action: @method:appendQuoteEntry
+              }
+            ]
+          }
+          actionKeys: [
+            {
+              keys: ["escape"]
+              action: @method:quoteBuilderEscPressed
+            }
+          ]
+        }
+        6: @reference:common.fseFindFooterForm
+      }
+    }
+
+    activityPubNotEnabled: {
+      desc: ActivityPub Not Enabled
+      art: activitypub_not_enabled
+      config: {
+        cls: true
+        pause: true
+      }
+    }
+  }
+
+  prompts: {
+    activityPubMenuCommand: {
+        art: activitypub_menu_prompt
+        mci:  {
+          ET2: {
+            argName: command
+            width: 20
+            maxLength: 20
+            submit: true
+            textStyle: upper
+            focus: true
+        }
+      }
+    }
+  }
+}

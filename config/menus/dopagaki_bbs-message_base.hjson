@@ -1,0 +1,1101 @@
+{
+    menus: {
+        messageBaseMainMenu: {
+            desc: Message Menu
+            art: MSGMNU
+            prompt: messageBaseMenuPrompt
+            config: {
+                interrupt: realtime
+            }
+            submit: [
+                {
+                    value: { command: "P" }
+                    action: @menu:messageBaseNewPost
+                }
+                {
+                    value: { command: "J" }
+                    action: @menu:messageBaseChangeCurrentConference
+                }
+                {
+                    value: { command: "C" }
+                    action: @menu:messageBaseChangeCurrentArea
+                }
+                {
+                    value: { command: "L" }
+                    action: @menu:messageBaseMessageList
+                }
+                {
+                    value: { command: "<" }
+                    action: @systemMethod:prevConf
+                }
+                {
+                    value: { command: ">" }
+                    action: @systemMethod:nextConf
+                }
+                {
+                    value: { command: "[" }
+                    action: @systemMethod:prevArea
+                }
+                {
+                    value: { command: "]" }
+                    action: @systemMethod:nextArea
+                }
+                {
+                    value: { command: "D" }
+                    action: @menu:messageBaseSetNewScanDate
+                }
+                {
+                    value: { command: "N" }
+                    action: @menu:messageBaseConfigureNewscan
+                }
+                {
+                    value: { command: "S" }
+                    action: @menu:messageBaseSearch
+                }
+                {
+                    value: { command: "M" }
+                    action: @menu:messageBaseMyMessages
+                }
+                {
+                    value: { command: "A" }
+                    action: @menu:editAutoSignature
+                }
+                {
+                    value: { command: "B" }
+                    action: @menu:bluewaveExport
+                }
+                {
+                    value: { command: "U" }
+                    action: @menu:offlineMailImport
+                }
+                //  an export leaves the packet in the caller's download
+                //  queue; this is how they get it without a trip to the
+                //  file base
+                {
+                    value: { command: "E" }
+                    action: @menu:fileBaseDownloadManager
+                }
+                {
+                    value: { command: "Q" }
+                    action: @systemMethod:prevMenu
+                }
+                {
+                    value: { command: "G" }
+                    action: @menu:fullLogoffSequence
+                }
+            ]
+        }
+
+        messageBaseNewPost: {
+            desc: Posting Message
+            module: msg_area_post_fse
+            config: {
+                art: {
+                    header: MSGEHDR
+                    body: MSGBODY
+                    footerEditor: MSGEFTR
+                    footerEditorMenu: MSGEMFT
+                    footerFind: MSGFND
+                    help: MSGEHLP
+                }
+                editorMode: edit
+                editorType: area
+            }
+            form: {
+                0: {
+                    mci: {
+                        TL1: {
+                            argName: from
+                        }
+                        ET2: {
+                            argName: to
+                            focus: true
+                            text: All
+                            validate: @systemMethod:validateNonEmpty
+                            maxLength: 36
+                        }
+                        ET3: {
+                            argName: subject
+                            maxLength: 72
+                            submit: true
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                    }
+                    submit: {
+                        3: [
+                            {
+                                value: { subject: null }
+                                action: @method:headerSubmit
+                            }
+                        ]
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:headerEscapePressed
+                        }
+                    ]
+                }
+
+                1: {
+                    "mci" : {
+                        MT1: {
+                            width: 79
+                            argName: message
+                            mode: edit
+                        }
+                    }
+
+                    submit: {
+                        *: [ { "value": "message", "action": "@method:editModeEscPressed" } ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            viewId: 1
+                        }
+                        {
+                            keys: [ "ctrl + s" ]
+                            action: @method:editModeQuickSave
+                        }
+                        {
+                            keys: [ "ctrl + o" ]
+                            action: @method:editModeQuickHelp
+                        }
+                        {
+                            keys: [ "ctrl + f" ]
+                            action: @method:editModeFind
+                        }
+                        {
+                            keys: [ "ctrl + n" ]
+                            action: @method:editModeFindNext
+                        }
+                        {
+                            keys: [ "ctrl + p" ]
+                            action: @method:editModeFindPrev
+                        }
+                        {
+                            keys: [ "ctrl + a" ]
+                            action: @method:editModeChangeSubject
+                        }
+                    ]
+                }
+                2: {
+                    mci: {
+                        SB1: {
+                            width:     9
+                            anchor:    left
+                            justify:   left
+                            separator: " "
+                            panels: [
+                                {
+                                    name:    mode
+                                    width:   3
+                                    justify: right
+                                }
+                                {
+                                    name:    pos
+                                    width:   5
+                                    justify: left
+                                }
+                            ]
+                        }
+                    }
+                }
+                3: {
+                    HM: {
+                        mci: {
+                            HM1: {
+                                "items" : [ "save", "discard", "help", "upload" ]
+                            }
+                        }
+                        submit: {
+                            *: [
+                                {
+                                    value: { 1: 0 }
+                                    action: @method:editModeMenuSave
+                                }
+                                {
+                                    value: { 1: 1 }
+                                    action: @systemMethod:prevMenu
+                                }
+                                {
+                                    value: { 1: 2 }
+                                    action: @method:editModeMenuHelp
+                                }
+                                {
+                                    value: { 1: 3 }
+                                    action: @method:editModeMenuUpload
+                                }
+                            ]
+                        }
+                        actionKeys: [
+                            {
+                                keys: [ "escape" ]
+                                action: @method:editModeEscPressed
+                            }
+                            {
+                                keys: [ "?" ]
+                                action: @method:editModeMenuHelp
+                            }
+                        ]
+                    }
+                }
+
+                6: @reference:common.fseFindFooterForm
+            }
+        }
+
+        messageBaseChangeCurrentConference: {
+            desc: Changing Confs
+            art: CCHANGE
+            module: msg_conf_list
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: conf
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { conf: null }
+                                action: @method:changeConference
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        messageBaseChangeCurrentArea: {
+            desc: Message Area List
+            art: CHANGE
+            module: msg_area_list
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: area
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { area: null }
+                                action: @method:changeArea
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        messageBaseMessageList: {
+            desc: Message List
+            module: msg_list
+            art: MSGLIST
+            config: {
+                menuViewPost: messageAreaViewPost
+                menuNewPost: messageBaseNewPost
+            }
+            form: {
+                0: {
+                    mci:  {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: messageIndex
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { messageIndex: null }
+                                action: @method:selectMessage
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        @reference:common.quitToPrevEntry
+                        {
+                            keys: [ "p", "shift + p" ]
+                            action: @method:postNewMessage
+                        }
+                    ]
+                }
+            }
+        }
+
+        messageBaseSetNewScanDate: {
+            desc: New Scan Update
+            module: set_newscan_date
+            art: SETMNSDATE
+            config: {
+                target: message
+                scanDateFormat: YYYYMMDD
+            }
+            form: {
+                0: {
+                    mci: {
+                        ME1: {
+                            focus: true
+                            submit: true
+                            argName: scanDate
+                            maskPattern: "####/##/##"
+                        }
+                        SM2: {
+                            argName: targetSelection
+                            submit: false
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { scanDate: null }
+                                action: @method:scanDateSubmit
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        messageBaseConfigureNewscan: {
+            desc: Configure Newscan
+            module: configure_newscan
+            art: CFGNEWSC
+            config: {
+                //  Menu to navigate to when user presses G to set floor date.
+                //  Uses set_newscan_date with target:floor.
+                setFloorDateMenu: messageBaseSetNewscanFloor
+            }
+            form: {
+                0: {
+                    mci: {
+                        VM1: {
+                            focus: true
+                            argName: areaIndex
+                            height: 10
+                        }
+                        TL2: { }
+                        TL3: { }
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "space", "enter" ]
+                            action: @method:toggleArea
+                        }
+                        {
+                            keys: [ "a", "shift + a" ]
+                            action: @method:toggleAllAreas
+                        }
+                        {
+                            keys: [ "g", "shift + g" ]
+                            action: @method:setFloorDate
+                        }
+                        {
+                            keys: [ "q", "shift + q", "escape" ]
+                            action: @method:done
+                        }
+                    ]
+                }
+            }
+        }
+
+        messageBaseSetNewscanFloor: {
+            desc: Set Newscan Floor
+            module: set_newscan_date
+            art: SETMNSDATE
+            config: {
+                target: floor
+                scanDateFormat: YYYYMMDD
+            }
+            form: {
+                0: {
+                    mci: {
+                        ME1: {
+                            focus: true
+                            submit: true
+                            argName: scanDate
+                            maskPattern: "####/##/##"
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { scanDate: null }
+                                action: @method:scanDateSubmit
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        messageBaseSearch: {
+            desc: Searching Messages
+            module: message_base_search
+            art: MSEARCH
+            config: {
+                messageListMenu: messageBaseSearchResultsMessageList
+            }
+            form: {
+                0: {
+                    mci: {
+                        ET1: {
+                            focus: true
+                            argName: searchTerms
+                        }
+                        BT2: {
+                            argName: search
+                            text: search
+                            submit: true
+                        }
+                        SM3: {
+                            argName: confTag
+                        }
+                        SM4: {
+                            argName: areaTag
+                        }
+                        ET5: {
+                            argName: toUserName
+                            maxLength: @config:users.usernameMax
+                        }
+                        ET6: {
+                            argName: fromUserName
+                            maxLength: @config:users.usernameMax
+                        }
+                        BT7: {
+                            argName: advancedSearch
+                            text: advanced search
+                            submit: true
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { search: null }
+                                action: @method:search
+                            }
+                            {
+                                value: { advancedSearch: null }
+                                action: @method:search
+                            }
+                        ]
+                    }
+
+                    actionKeys: @reference:common.escToPrev
+                }
+            }
+        }
+
+        messageBaseSearchResultsMessageList: {
+            desc: Searching Messages
+            module: msg_list
+            art: MSRCHLST
+            config: {
+                menuViewPost: messageAreaViewPost
+            }
+            form: {
+                0: {
+                    mci:  {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: messageIndex
+                        }
+                        TL6: {
+                            //  theme me!
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { messageIndex: null }
+                                action: @method:selectMessage
+                            }
+                        ]
+                    }
+                    actionKeys: @reference:common.quitToPrev
+                }
+            }
+        }
+
+        //  The message_base_search module looks for this entry by default
+        messageSearchNoResults: {
+            desc: Message Search
+            art: MSRCNORES
+            config: {
+                pause: true
+            }
+        }
+
+        messageBaseMyMessages: {
+            desc: Personal Messages
+            module: my_messages
+            config: {
+                messageListMenu: messageBaseMyMessagesList
+            }
+        }
+
+        messageBaseMyMessagesList: {
+            desc: Personal Messages
+            module: msg_list
+            art: MYMSGLST
+            config: {
+                menuViewPost: messageAreaViewPost
+                menuNewPost: messageBaseNewPost
+            }
+            form: {
+                0: {
+                    mci:  {
+                        VM1: {
+                            focus: true
+                            submit: true
+                            argName: messageIndex
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { messageIndex: null }
+                                action: @method:selectMessage
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        @reference:common.quitToPrevEntry
+                        {
+                            keys: [ "p", "shift + p" ]
+                            action: @method:postNewMessage
+                        }
+                    ]
+                }
+            }
+        }
+
+        //
+        //  No art ships for this menu, so the module runs without a status or
+        //  progress view; a theme that supplies art gets both. The packet is
+        //  placed in the caller's download queue either way.
+        //
+        bluewaveExport: {
+            desc: Blue Wave Export
+            module: message_base_bluewave_export
+        }
+
+        //
+        //  The format is read out of the packet rather than asked for, so one
+        //  entry takes a reply packet from any reader this system knows.
+        //
+        offlineMailImport: {
+            desc: Offline Mail Import
+            module: message_base_offline_import
+        }
+
+        editAutoSignature: {
+            desc: Auto Sig Editor
+            module: autosig_edit
+            art: autosig
+            form: {
+                0: {
+                    mci: {
+                        MT1: {
+                            argName: signature
+                            tabSwitchesView: true
+                        }
+                        BT2: {
+                            text: save
+                            argName: save
+                            submit: true
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { save: null }
+                                action: @method:saveChanges
+                            }
+                        ]
+                    }
+
+                    actionKeys: @reference:common.escToPrev
+                }
+            }
+        }
+
+        messageAreaViewPost:  {
+            desc: Viewing Message
+            module: msg_area_view_fse
+            config: {
+                art: {
+                    header: MSGVHDR
+                    body: MSGBODY
+                    footerView: MSGVFTR
+                    footerFind: MSGFND
+                    help: MSGVHLP
+                    expToDlQueue: mb_export_dl_queue
+                },
+                editorMode: view
+                editorType: area
+            }
+            form: {
+                0: {
+                    mci: {
+                        //  :TODO: ensure this block isn't even req. for theme to apply...
+                    }
+                }
+                1: {
+                    mci: {
+                        MT1: {
+                            width: 79
+                            mode: preview
+                            hyperlinks: true
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: message
+                                action: @method:editModeEscPressed
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            viewId: 1
+                        }
+                    ]
+                }
+                2: {
+                    mci: {
+                        SB1: {
+                            width:     9
+                            anchor:    left
+                            justify:   left
+                            separator: " "
+                            panels: [
+                                {
+                                    name:    mode
+                                    width:   3
+                                    justify: right
+                                }
+                                {
+                                    name:    pos
+                                    width:   5
+                                    justify: left
+                                }
+                            ]
+                        }
+                    }
+                }
+                4: {
+                    mci: {
+                        HM1: {
+                            //  :TODO: (#)Jump/(L)Index (msg list)/Last
+                            items: [ "prev", "next", "reply", "quit", "download", "help" ]
+                            focusItemIndex: 1
+                        }
+                    }
+                    submit: {
+                        *: [
+                            {
+                                value: { 1: 0 }
+                                action: @method:prevMessage
+                            }
+                            {
+                                value: { 1: 1 }
+                                action: @method:nextMessage
+                            }
+                            {
+                                value: { 1: 2 }
+                                action: @method:replyMessage
+                                extraArgs: {
+                                    menu: messageAreaReplyPost
+                                }
+                            }
+                            {
+                                value: { 1: 3 }
+                                action: @systemMethod:prevMenu
+                            }
+                            {
+                                value: { 1: 4 }
+                                action: @method:addToDownloadQueue
+                            }
+                            {
+                                value: { 1: 5 }
+                                action: @method:viewModeMenuHelp
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "p", "shift + p" ]
+                            action: @method:prevMessage
+                        }
+                        {
+                            keys: [ "n", "shift + n" ]
+                            action: @method:nextMessage
+                        }
+                        {
+                            keys:   [ "r", "shift + r" ]
+                            action: @method:replyMessage
+                            extraArgs: {
+                                menu: messageAreaReplyPost
+                            }
+                        }
+                        @reference:common.quitToPrevEntry
+                        {
+                            keys: [ "d", "shift + d" ]
+                            action: @method:addToDownloadQueue
+                        }
+                        {
+                            keys: [ "?" ]
+                            action: @method:viewModeMenuHelp
+                        }
+                        {
+                            keys: [ "down arrow", "up arrow", "page up", "page down" ]
+                            action: @method:movementKeyPressed
+                        }
+                        {
+                            keys: [ "ctrl + f" ]
+                            action: @method:viewModeFind
+                        }
+                        {
+                            keys: [ "ctrl + n" ]
+                            action: @method:viewModeFindNext
+                        }
+                        {
+                            keys: [ "ctrl + p" ]
+                            action: @method:viewModeFindPrev
+                        }
+                    ]
+                }
+
+                6: @reference:common.fseFindFooterForm
+            }
+        }
+
+        messageAreaReplyPost: {
+            desc: Replying to Message
+            module: msg_area_post_fse
+            config: {
+                art: {
+                    header:             MSGEHDR
+                    body:               MSGBODY
+                    quote:              MSGQUOT
+                    footerEditor:       MSGEFTR
+                    footerEditorMenu:   MSGEMFT
+                    footerFind:         MSGFND
+                    help:               MSGEHLP
+                }
+                editorMode: edit
+                editorType: area
+            }
+            form: {
+                0: {
+                    mci: {
+                        //  :TODO: use appropriate system properties for max lengths
+                        TL1: {
+                            argName: from
+                        }
+                        ET2: {
+                            argName: to
+                            focus: true
+                            validate: @systemMethod:validateNonEmpty
+                            maxLength: 36
+                        }
+                        ET3: {
+                            argName: subject
+                            maxLength: 72
+                            submit: true
+                            validate: @systemMethod:validateNonEmpty
+                        }
+                        TL4: {
+                            //  :TODO: this is for RE: line (NYI)
+                            //width: 27
+                            //textOverflow: ...
+                        }
+                    }
+                    submit: {
+                        3: [
+                            {
+                                value: { subject: null }
+                                action: @method:headerSubmit
+                            }
+                        ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:headerEscapePressed
+                        }
+                    ]
+                }
+                1: {
+                    mci: {
+                        MT1: {
+                            width: 79
+                            height: 14
+                            argName: message
+                            mode: edit
+                        }
+                    }
+                    submit: {
+                        *: [ { "value": "message", "action": "@method:editModeEscPressed" } ]
+                    }
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ],
+                            viewId: 1
+                        }
+                        {
+                            keys: [ "ctrl + s" ]
+                            action: @method:editModeQuickSave
+                        }
+                        {
+                            keys: [ "ctrl + o" ]
+                            action: @method:editModeQuickHelp
+                        }
+                        {
+                            keys: [ "ctrl + f" ]
+                            action: @method:editModeFind
+                        }
+                        {
+                            keys: [ "ctrl + n" ]
+                            action: @method:editModeFindNext
+                        }
+                        {
+                            keys: [ "ctrl + p" ]
+                            action: @method:editModeFindPrev
+                        }
+                        {
+                            keys: [ "ctrl + a" ]
+                            action: @method:editModeChangeSubject
+                        }
+                    ]
+                }
+
+                2: {
+                    mci: {
+                        SB1: {
+                            width:     9
+                            anchor:    left
+                            justify:   left
+                            separator: " "
+                            panels: [
+                                {
+                                    name:    mode
+                                    width:   3
+                                    justify: right
+                                }
+                                {
+                                    name:    pos
+                                    width:   5
+                                    justify: left
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                3: {
+                    mci: {
+                        HM1: {
+                            items: [ "save", "discard", "quote", "help", "upload" ]
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { 1: 0 }
+                                action: @method:editModeMenuSave
+                            }
+                            {
+                                value: { 1: 1 }
+                                action: @systemMethod:prevMenu
+                            }
+                            {
+                                value: { 1: 2 },
+                                action: @method:editModeMenuQuote
+                            }
+                            {
+                                value: { 1: 3 }
+                                action: @method:editModeMenuHelp
+                            }
+                            {
+                                value: { 1: 4 }
+                                action: @method:editModeMenuUpload
+                            }
+                        ]
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:editModeEscPressed
+                        }
+                        {
+                            keys: [ "s", "shift + s" ]
+                            action: @method:editModeMenuSave
+                        }
+                        {
+                            keys: [ "d", "shift + d" ]
+                            action: @systemMethod:prevMenu
+                        }
+                        {
+                            keys: [ "q", "shift + q" ]
+                            action: @method:editModeMenuQuote
+                        }
+                        {
+                            keys: [ "?" ]
+                            action: @method:editModeMenuHelp
+                        }
+                    ]
+                }
+
+                //  Quote builder
+                5: {
+                    mci: {
+                        MT1: {
+                            width: 79
+                            height: 7
+                        }
+                        VM3: {
+                            width: 79
+                            height: 4
+                            argName: quote
+                        }
+                    }
+
+                    submit: {
+                        *: [
+                            {
+                                value: { quote: null }
+                                action: @method:appendQuoteEntry
+                            }
+                        ]
+                    }
+
+                    actionKeys: [
+                        {
+                            keys: [ "escape" ]
+                            action: @method:quoteBuilderEscPressed
+                        }
+                    ]
+                }
+
+                6: @reference:common.fseFindFooterForm
+            }
+        }
+
+        //
+        //  The 'msg_conf_list' module defaults to looking for
+        //  a menu entry of 'changeConfPreArtMenu'. If found,
+        //  this menu will be executed upon changing message
+        //  conferences using the conference tag as an art spec.
+        //
+        changeMessageConfPreArt: {
+            desc: Viewing Art
+            module: show_art
+            config: {
+                method: messageConf
+                key: confTag
+                pause: true
+                cls: true
+                menuFlags: [ "noHistory" ]
+            }
+        }
+
+        //
+        //  The 'msg_area_list' module defaults to looking for
+        //  a menu entry of 'changeMessageAreaPreArt'. If found,
+        //  this menu will be executed upon changing message
+        //  areas using the area tag as an art spec.
+        //
+        changeMessageAreaPreArt: {
+            desc: Viewing Art
+            module: show_art
+            config: {
+                method: messageArea
+                key: areaTag
+                pause: true
+                cls: true
+                menuFlags: [ "noHistory" ]
+            }
+        }
+    }
+
+    //  Shared fragments referenced via @reference:common.*
+    common: {
+        fseFindFooterForm: {
+            mci: {
+                ET1: {
+                    argName: query
+                    width: 60
+                    maxLength: 100
+                    focus: true
+                }
+            }
+            submit: {
+                1: [
+                    {
+                        value: { query: null }
+                        action: @method:footerFindSubmit
+                    }
+                ]
+            }
+            actionKeys: [
+                {
+                    keys: [ "escape" ]
+                    action: @method:footerFindCancel
+                }
+            ]
+        }
+    }
+
+    prompts: {
+        messageBaseMenuPrompt: {
+            art: MSGPMPT
+            mci:  {
+                //TL1: {}
+                ET2: {
+                    argName: command
+                    width: 20
+                    maxLength: 20
+                    submit: true
+                    textStyle: upper
+                    focus: true
+                }
+            }
+        },
+
+        //  default prompt entry used by the 'msg_list' module
+        deleteMessageFromListPrompt: {
+            art: MSGDELPMPT
+            mci: {
+                TM1: {
+                    argName: promptValue
+                    items: [ "yes", "no" ]
+                    focus: true
+                    hotKeys: { Y: 0, N: 1 }
+                    hotKeySubmit: true
+                }
+            }
+        }
+    }
+}
